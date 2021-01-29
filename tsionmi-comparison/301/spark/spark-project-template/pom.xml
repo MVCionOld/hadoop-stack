@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.fivt.atp.bigdata</groupId>
+  <artifactId>spark-project-template-parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Spark Project Template</name>
+  <description>Template project to start working with Apache Spark using Scala and Maven</description>
+
+  <modules>
+    <module>spark-project-template-apps</module>
+    <module>spark-project-template</module>
+  </modules>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <resources.filter.delimiter>@{*}</resources.filter.delimiter>
+
+    <compiler.java.version>1.8</compiler.java.version>
+    <compiler.scala.version>2.11.12</compiler.scala.version>
+    <compiler.scala.compat.version>2.11</compiler.scala.compat.version>
+
+    <scala-maven-plugin.version>4.4.0</scala-maven-plugin.version>
+    <scalatest-maven-plugin.version>2.0.2</scalatest-maven-plugin.version>
+    <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+    <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+    <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
+    <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+
+    <spark.version>2.4.5</spark.version>
+    <scalatest.version>3.2.3</scalatest.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>${compiler.scala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-reflect</artifactId>
+        <version>${compiler.scala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-sql_${compiler.scala.compat.version}</artifactId>
+        <version>${spark.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-core_${compiler.scala.compat.version}</artifactId>
+        <version>${scalatest.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-flatspec_${compiler.scala.compat.version}</artifactId>
+        <version>${scalatest.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-shouldmatchers_${compiler.scala.compat.version}</artifactId>
+        <version>${scalatest.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+
+    <pluginManagement>
+      <plugins>
+
+        <plugin>
+          <groupId>net.alchim31.maven</groupId>
+          <artifactId>scala-maven-plugin</artifactId>
+          <version>${scala-maven-plugin.version}</version>
+          <configuration>
+            <args>
+              <arg>-deprecation</arg>
+              <arg>-feature</arg>
+              <arg>-unchecked</arg>
+              <arg>-explaintypes</arg>
+              <arg>-Xfatal-warnings</arg>
+              <arg>-Yno-adapted-args</arg>
+              <arg>-Ywarn-dead-code</arg>
+              <arg>-Ywarn-numeric-widen</arg>
+              <arg>-Ywarn-unused</arg>
+              <arg>-Ywarn-value-discard</arg>
+              <arg>-Xlint:_</arg>
+            </args>
+            <jvmArgs>
+              <jvmArg>-Xmx2048m</jvmArg>
+            </jvmArgs>
+            <source>${compiler.java.version}</source>
+            <target>${compiler.java.version}</target>
+            <encoding>${project.build.sourceEncoding}</encoding>
+            <scalaCompatVersion>${compiler.scala.compat.version}</scalaCompatVersion>
+            <checkMultipleScalaVersions>true</checkMultipleScalaVersions>
+            <failOnMultipleScalaVersions>true</failOnMultipleScalaVersions>
+            <sendJavaToScalac>false</sendJavaToScalac>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.scalatest</groupId>
+          <artifactId>scalatest-maven-plugin</artifactId>
+          <version>${scalatest-maven-plugin.version}</version>
+          <configuration>
+            <parallel>false</parallel>
+            <junitxml>.</junitxml>
+            <filereports>WDF TestSuite.txt</filereports>
+            <testFailureIgnore>false</testFailureIgnore>
+            <systemProperties>
+              <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
+              <log4j.configuration>log4j-tests.xml</log4j.configuration>
+            </systemProperties>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${maven-shade-plugin.version}</version>
+          <configuration>
+            <createDependencyReducedPom>false</createDependencyReducedPom>
+            <filters>
+              <filter>
+                <!-- Workaround for java.lang.SecurityException: Invalid signature file digest for Manifest main attributes-->
+                <artifact>*:*</artifact>
+                <excludes>
+                  <exclude>META-INF/*.SF</exclude>
+                  <exclude>META-INF/*.DSA</exclude>
+                  <exclude>META-INF/*.RSA</exclude>
+                </excludes>
+              </filter>
+            </filters>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven-resources-plugin.version}</version>
+          <configuration>
+            <delimiters>
+              <!--Avoid interfering with Shell environment variables - use non-default delimiter-->
+              <delimiter>${resources.filter.delimiter}</delimiter>
+            </delimiters>
+            <useDefaultDelimiters>false</useDefaultDelimiters>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${maven-dependency-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>${maven-assembly-plugin.version}</version>
+          <configuration>
+            <appendAssemblyId>false</appendAssemblyId>
+            <delimiters>
+              <delimiter>${resources.filter.delimiter}</delimiter>
+            </delimiters>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.22.2</version>
+        </plugin>
+
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <!--No Java code - disable Java compilation-->
+          <execution>
+            <id>default-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>default-testCompile</id>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <executions>
+          <!--No Java code - disable Java tests-->
+          <execution>
+            <id>default-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+</project>
